@@ -1,47 +1,51 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-
 Parameters:
   S3BucketParameter:
     Type: String
   BuildArtifactParameter:
     Type: String
     Default: BuildArtifact
-    
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: codepipeline-s3-objects-public-read
-    Description: A Lambda function triggered by CodePipeline to update the S3 ACL to Public Read for objects deployed via S3 Deploy action.
+    Description: A Lambda function triggered by CodePipeline to update the S3 ACL
+      to Public Read for objects deployed via S3 Deploy action.
     Author: George Seib
     SpdxLicenseId: Apache-2.0
-    LicenseUrl: LICENSE.txt
-    ReadmeUrl: README.md
-    Labels: ['codepipeline','s3']
+    LicenseUrl: s3://seib-publicacl/3b83ef96387f14655fc854ddc3c6bd57
+    ReadmeUrl: s3://seib-publicacl/d23dbd142260285fce8a9b16cd9090f3
+    Labels:
+    - codepipeline
+    - s3
     HomePageUrl: https://github.com/samdengler/codepipeline-s3-objects-public-read
     SemanticVersion: 0.0.5
     SourceCodeUrl: https://github.com/samdengler/codepipeline-s3-objects-public-read
-
 Resources:
   PublicReadAclFunction:
     Type: AWS::Serverless::Function
     Properties:
       Runtime: nodejs10.x
       Handler: index.handler
-      CodeUri: app
+      CodeUri: s3://seib-publicacl/1dd6dc7c911838bd03ea1699dc1387c7
       Timeout: 900
       Environment:
         Variables:
-          S3_BUCKET: !Ref S3BucketParameter
-          BUILD_ARTIFACT: !Ref BuildArtifactParameter
-
+          S3_BUCKET:
+            Ref: S3BucketParameter
+          BUILD_ARTIFACT:
+            Ref: BuildArtifactParameter
       Policies:
-        - S3FullAccessPolicy:
-            BucketName: !Ref S3BucketParameter
-        - CodePipelineLambdaExecutionPolicy: {}
-
+      - S3FullAccessPolicy:
+          BucketName:
+            Ref: S3BucketParameter
+      - CodePipelineLambdaExecutionPolicy: {}
 Outputs:
   PublicReadAclFunctionArn:
-    Value: !GetAtt PublicReadAclFunction.Arn
-
+    Value:
+      Fn::GetAtt:
+      - PublicReadAclFunction
+      - Arn
   PublicReadAclFunctionName:
-    Value: !Ref PublicReadAclFunction
+    Value:
+      Ref: PublicReadAclFunction
